@@ -3,6 +3,17 @@ interface WebEventData {
     data: any
 }
 
+interface WebUIMessage {
+    event: string
+    ok: boolean
+    msg: string
+    data: any
+}
+
+type CKPTkeys = 'status' | 'test_metrics' | 'hyperparams' | 'train_params' | 'control_params'
+type CKPTStatic = Record<CKPTkeys, Record<string, string | number>>
+type CKPTMaps  = Record<CKPTkeys, Record<number, number[]> | undefined>
+type Metrics = Record<string, Record<string, number> | number>
 
 class WebUIAPI {
     ui_socket: WebSocket
@@ -12,12 +23,17 @@ class WebUIAPI {
         this.ui_socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/board`)
         this.ui_socket.addEventListener('open', (ev) => {
             console.log('connected to web ui' + ev)
+
         })
         this.listeners = {}
         this.ui_socket.addEventListener('message', (ev) => {
-            let { event, data } = JSON.parse(ev.data) as WebEventData
-            let func = this.listeners[event]
-            if (func) func(data)
+            let { event, ok, msg, data } = JSON.parse(ev.data) as WebUIMessage
+            if(ok) {
+                let func = this.listeners[event]
+                if (func) func(data)
+            } else {
+                console.error('Error:', msg)
+            }
         })
     }
 
@@ -37,14 +53,11 @@ class WebUIAPI {
         this.addListener(event, callback)
         this.emit(event, data)
     }
+
+    onready(callback: () => void) {
+        this.addListener('ready', callback)
+    }
 }
-
-
-type CKPTkeys = 'status' | 'test_metrics' | 'hyperparams' | 'train_params' | 'control_params'
-type CKPTStatic = Record<CKPTkeys, Record<string, any>>
-type CKPTMaps  = Record<CKPTkeys, Record<number, number[]>>
-type Metrics = Record<string, Record<string, number> | number>
-
 
 const webUiApi = new WebUIAPI()
 
@@ -52,9 +65,13 @@ export {
     webUiApi
 }
 
+export default webUiApi
+
 export type {
     CKPTkeys,
     CKPTStatic,
     CKPTMaps,
-    Metrics
+    Metrics,
+    WebEventData,
+    WebUIMessage,
 }

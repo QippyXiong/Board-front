@@ -1,26 +1,25 @@
-<script setup>
-import { onMounted, ref } from 'vue';
+<script lang="ts" setup>
+import { withDefaults } from 'vue';
 
-const props = defineProps({
-    data: Object,
-    title: String,
-    hightLightKeys: {
-        type: Array,
-        default: () => []
-    },
-    skipKeys: {
-        type: Array,
-        default: () => []
-    }
+const props = withDefaults(defineProps<{
+    data: Record<string, string | number>
+    title?: string,
+    hightLightKeys: Array<string>,
+    skipKeys?: Array<string>
+}>(), {
+    title: () => '',
+    hightLightKeys: () => [],
+    skipKeys: () => []
 })
 
-const tableData = ref([])
+// const tableData: Ref<Array<{ key: string, value: any } >> = ref([])
 
-onMounted(() => {
-    tableData.value = Object.keys(props.data).map(k => { return { key: k, value: props.data[k] } })
-})
+// onMounted(() => {
+//     tableData.value = Object.keys(props.data).map(k => { return { key: k, value: props.data[k] } })
+// })
 
-import { ElTable, ElTableColumn, ElCard } from 'element-plus';
+// import { ElTable, ElTableColumn, ElCard } from 'element-plus';
+
 </script>
 
 <template>
@@ -30,24 +29,34 @@ import { ElTable, ElTableColumn, ElCard } from 'element-plus';
             <ElTableColumn prop="key" label="Key"></ElTableColumn>
             <ElTableColumn prop="value" label="Value"></ElTableColumn>
         </ElTable> -->
-        <div style="display: flex; flex-direction: row; max-height: 100px; overflow: auto;"  >
-            <div style="text-align: right; width: 50%; box-sizing: border-box;">
-                <div class="text" style="border-right: 1px solid;" v-for="key in Object.keys(props.data)" v-if="props.skipKeys.indexOf(key)==-1" :style="{ backgroundColor: ('#fa000033' ? props.hightLightKeys.indexOf(key) != -1 : 'inherent') }">{{ key }}</div>
-            </div>
-            <div style="text-align: left; width: 50%; box-sizing: border-box; padding-right: 5px; ">
-                <div class="text" v-for="key in Object.keys(props.data)" v-if="props.skipKeys.indexOf(key)==-1"> {{props.data[key]}}</div>
-            </div>  
+        <div style="display: flex; flex-direction: row; max-height: 100px; overflow: auto;">
+            <template v-for="value, key of $props.data">
+                <div v-if="props.skipKeys.indexOf(key) == -1" 
+                     :class="'highlight' ? $props.hightLightKeys?.indexOf(key) != -1 : 'highlight' ">
+                    <div style="text-align: right; width: 50%; box-sizing: border-box;">
+                        <div class="text">{{ key }}</div>
+                    </div>
+                    <div style="text-align: left; width: 50%; box-sizing: border-box; padding-right: 5px; ">
+                        <div class="text">{{ value }}</div>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </template>
 
 <style scoped>
+.highlight {
+    background-color: #ad2d06;
+}
+
 .card {
     font-size: 12px;
     border: 1px solid #c5c6c8;
     padding: 10px;
     border-radius: 5px;
 }
+
 .text {
     overflow: hidden;
     text-wrap: nowrap;

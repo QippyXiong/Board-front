@@ -1,8 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 // views
-import General from '@/views/General.vue'
-import CKPTs from '../views/CKPTs.vue'
+import General from '@/views/CKPTSelect.vue'
+import CKPTs from '@/views/CKPTs.vue'
 
 const routes = [
     {

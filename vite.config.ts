@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/board': {
-        target: 'ws://10.181.8.236:13212',
+        target: 'ws://localhost:13212',
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/api/, '')

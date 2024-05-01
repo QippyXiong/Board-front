@@ -1,28 +1,38 @@
-<script setup>
-import VChart, { THEME_KEY } from "vue-echarts";
-import { ref, watch } from 'vue'
+<script lang="ts" setup>
+import VChart from "vue-echarts"  // { THEME_KEY }
+import { ref, Ref, watch } from 'vue'
 
 import { use } from 'echarts/core'
 import { LineChart } from 'echarts/charts'
 import { GridComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 
+
 use([GridComponent, LineChart, CanvasRenderer])
 
-let props = defineProps({
-    values: Array,
-    title: {
-        type: String,
-        default: 'Figure'
-    },
-    values: {
-        type: Array,
-        default: []
-    },
-})
+let props = defineProps<{
+    title: string,
+    values: Array<number[]>,
+}>()
 
 
-const chartOptions = ref({
+interface Option {
+    xAxis: {
+        data: number[],
+        type: string
+    },
+    yAxis: {
+        type: string
+    },
+    series: {
+        data: Array<number[]>,
+        type: string,
+        smooth: boolean
+    }[]
+}
+
+
+const chartOptions: Ref<Option> = ref({
   xAxis: {
     data: [1, 3, 7, 10, 12],
     type: 'value'
@@ -39,7 +49,7 @@ const chartOptions = ref({
     ]
 });
 
-watch(() => props.values, (newVal, oldVal) => {
+watch(() => props.values, (newVal: Array<number[]>, _: Array<number[]>) => {
     chartOptions.value.series[0].data = newVal
 })
 // chartOptions.value.series[0].data = props.values
