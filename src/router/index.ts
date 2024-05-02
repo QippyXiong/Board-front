@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 // views
 import General from '@/views/CKPTSelect.vue'
-import CKPTs from '@/views/CKPTs.vue'
+import CKPTs from '@/views/CKPTCompare.vue'
 
 const routes = [
     {
@@ -11,8 +11,8 @@ const routes = [
         component: General
     },
     {
-        path: '/CKPTs',
-        name: 'CKPTs',
+        path: '/CKPTsCompare',
+        name: 'CKPTsCompare',
         component: CKPTs
     }
 ]

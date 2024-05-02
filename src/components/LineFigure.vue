@@ -4,43 +4,30 @@ import { ref, Ref, watch } from 'vue'
 
 import { use } from 'echarts/core'
 import { LineChart } from 'echarts/charts'
-import { GridComponent } from 'echarts/components'
+import { GridComponent, TitleComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
+import { EChartsCoreOption } from 'echarts/core'
 
+use([GridComponent, LineChart, CanvasRenderer, TitleComponent])
 
-use([GridComponent, LineChart, CanvasRenderer])
-
-let props = defineProps<{
-    title: string,
+const props = defineProps<{
     values: Array<number[]>,
+    title?: string,
+    unit?: string
 }>()
 
-
-interface Option {
+const chartOptions: Ref<EChartsCoreOption> = ref({
+    title: {
+        text: props.title,
+    },
     xAxis: {
-        data: number[],
-        type: string
+        data: [1, 3, 7, 10, 12],
+        type: 'value'
     },
     yAxis: {
-        type: string
+        type: 'value'
     },
-    series: {
-        data: Array<number[]>,
-        type: string,
-        smooth: boolean
-    }[]
-}
-
-
-const chartOptions: Ref<Option> = ref({
-  xAxis: {
-    data: [1, 3, 7, 10, 12],
-    type: 'value'
-  },
-  yAxis: {
-    type: 'value'
-  },
-  series: [
+    series: [
         {
             data: [],
             type: 'line',
@@ -50,7 +37,8 @@ const chartOptions: Ref<Option> = ref({
 });
 
 watch(() => props.values, (newVal: Array<number[]>, _: Array<number[]>) => {
-    chartOptions.value.series[0].data = newVal
+    if(Array.isArray(chartOptions.value.series))
+        chartOptions.value.series[0].data = newVal
 })
 // chartOptions.value.series[0].data = props.values
 
