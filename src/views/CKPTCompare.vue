@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { ref, onMounted, Ref, VueElement } from 'vue'
+import { ref, onMounted, Ref } from 'vue'
 
-import { Metrics, webUiApi, CKPTStatic,CKPTMaps } from '@/api'
+import { Metrics, webUiApi, CKPTStatic } from '@/api'
 import { loadData } from '@/api/utils'
 
 import LineFigure from '@/components/LineFigure.vue'
