@@ -19,6 +19,7 @@ const used_keys: Ref<string[]> = ref([])
 onMounted(()=>{
     let [selectedPaths, selectedStatics, usedKeys]: [string[], CKPTStatic[], string[]] = loadData('selectedCKPTs')
     selected_paths.value = selectedPaths
+    console.log(selected_paths.value)
     selected_statics.value = selectedStatics
     used_keys.value = usedKeys
 
@@ -43,11 +44,24 @@ onMounted(()=>{
 })
 
 function showLoss(path: string) {
+    console.log(`showLoss ${path}`)
     webUiApi.emit(`losses`, { ckpt_path: path })
 }
 
 function showValids(ckpt: string) {
+    console.log(`showValids ${ckpt}`)
     webUiApi.emit(`valids`, { ckpt_path: ckpt })
+}
+
+function clickPreview(ev: MouseEvent, path: string) {
+    console.log(ev)
+    if (ev.altKey) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        console.log(`right click ${path}`)
+        showLoss(path)
+        showValids(path)
+    }
 }
 
 </script>
@@ -55,13 +69,14 @@ function showValids(ckpt: string) {
 <template>
     <div style="width: 100%; height: 100%; display: flex; flex-direction: row;">
         <div style="width: 200px;">
-            <CKPTPreview v-for="path,idx of selected_paths"
-                @dbclick="showLoss(path); showValids(path)"
-                :main-metric-key="mainMetricKey"
-                :show-path="true"
-                :ckpt-path="path"
-                :ckpt="selected_statics[idx]">
-            </CKPTPreview>
+            <div v-for="path,idx of selected_paths" @click="ev => clickPreview(ev, path)">
+                <CKPTPreview
+                    :main-metric-key="mainMetricKey"
+                    :show-path="true"
+                    :ckpt-path="path"
+                    :ckpt="selected_statics[idx]">
+                </CKPTPreview>
+            </div>
         </div>
         <!--  -->
         <div style="width: calc(100%-200px); box-sizing: border-box;">

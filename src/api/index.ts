@@ -18,6 +18,7 @@ type Metrics = Record<string, Record<string, number> | number>
 class WebUIAPI {
     ui_socket: WebSocket
     listeners: { [key: string]: (data: any) => void }
+    error_handles: { [key: string]: (ui_msg: WebUIMessage) => void }
     
     constructor() {
         this.ui_socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}/board`)
@@ -26,13 +27,16 @@ class WebUIAPI {
 
         })
         this.listeners = {}
+        this.error_handles = {}
         this.ui_socket.addEventListener('message', (ev) => {
             let { event, ok, msg, data } = JSON.parse(ev.data) as WebUIMessage
             if(ok) {
                 let func = this.listeners[event]
                 if (func) func(data)
             } else {
-                console.error('Error:', msg)
+                let handle = this.listeners[event]
+                if(handle) handle({ event, ok, msg, data })
+                else console.error('Error:', msg)
             }
         })
     }
@@ -44,8 +48,13 @@ class WebUIAPI {
         }))
     }
 
-    addListener(event: string, callback: (data: any) => void): void {
-        this.listeners[event] = callback
+    addListener(event: string, callback: (data: any) => void, 
+                err_handle: ((ui_msg: WebUIMessage)=>void) | undefined = undefined): void {
+        try {
+            this.listeners[event] = callback
+        } catch (err) {
+            if(err_handle) this.error_handles[event] = err_handle
+        }
     }
 
     toggle(event: string, data: any, callback: (data: any) => void) {

@@ -42,8 +42,8 @@ import ckpt_example from '@/ckpts_example.json'
 
 onMounted(() => {
     // setTimeout(() => fetchCkpts(), 3000)
-    let [ckpts, statics, mps] = ckpt_example as [string[], CKPTStatic[], CKPTMaps]
-    cbv([ckpts, statics, mps])
+    // let [ckpts, statics, mps] = ckpt_example as [string[], CKPTStatic[], CKPTMaps]
+    // cbv([ckpts, statics, mps])
     webUiApi.onready(fetchCkpts)
 })
 
@@ -114,11 +114,12 @@ function jumpComparePage(): void {
             style="width: 200px; height: 100%; display: flex; flex-direction: column;">
             <div style="display: flex; flex-direction: row; flex-wrap: wrap">
                 <template v-for="idx, key of targetIdxes">
-                    <div v-if="typeof idx != 'undefined'" >{{ key }}
+                    <div v-if="idx != 'undefined'" >{{ key }}
                         <Close style="float: right" width="10px" height="10px" 
-                        @click="() => { targetIdxes[key] = undefined; getInterResult() }" ></Close>
+                            @click="() => { targetIdxes[key] = undefined; getInterResult() }" >
+                        </Close>
                     </div>
-                    <ParamsCard v-if="typeof idx != 'undefined'" 
+                    <ParamsCard v-if="idx != 'undefined'" 
                         :data="conf_statics[idx][key]" ></ParamsCard>
                 </template>
             </div>
