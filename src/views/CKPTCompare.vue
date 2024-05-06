@@ -16,6 +16,8 @@ const selected_paths: Ref<string[]> = ref([])
 const selected_statics: Ref<CKPTStatic[]> = ref([])
 const used_keys: Ref<string[]> = ref([])
 
+// TODO: implement metrics comparision between different params
+
 onMounted(()=>{
     let [selectedPaths, selectedStatics, usedKeys]: [string[], CKPTStatic[], string[]] = loadData('selectedCKPTs')
     selected_paths.value = selectedPaths
@@ -24,6 +26,7 @@ onMounted(()=>{
     used_keys.value = usedKeys
 
     webUiApi.addListener(`losses`, (data: Record<string, number>[])=>{
+        console.log(data)
         if(data[0]['loss'] == undefined)
         { // `loss` key must exist
             console.error('loss key not found in data')
@@ -43,9 +46,11 @@ onMounted(()=>{
     })
 })
 
-function showLoss(path: string) {
+const loss_func: Ref<string> = ref('')
+function showLoss(path: string, idx: number) {
     console.log(`showLoss ${path}`)
     webUiApi.emit(`losses`, { ckpt_path: path })
+    loss_func.value = selected_statics.value[idx].train_params['loss_func'] as string
 }
 
 function showValids(ckpt: string) {
@@ -53,13 +58,13 @@ function showValids(ckpt: string) {
     webUiApi.emit(`valids`, { ckpt_path: ckpt })
 }
 
-function clickPreview(ev: MouseEvent, path: string) {
+function clickPreview(ev: MouseEvent, path: string, idx: number) {
     console.log(ev)
     if (ev.altKey) {
         ev.stopPropagation();
         ev.preventDefault();
         console.log(`right click ${path}`)
-        showLoss(path)
+        showLoss(path, idx)
         showValids(path)
     }
 }
@@ -69,7 +74,7 @@ function clickPreview(ev: MouseEvent, path: string) {
 <template>
     <div style="width: 100%; height: 100%; display: flex; flex-direction: row;">
         <div style="width: 200px;">
-            <div v-for="path,idx of selected_paths" @click="ev => clickPreview(ev, path)">
+            <div v-for="path,idx of selected_paths" @click="ev => clickPreview(ev, path, idx)">
                 <CKPTPreview
                     :main-metric-key="mainMetricKey"
                     :show-path="true"
@@ -78,17 +83,17 @@ function clickPreview(ev: MouseEvent, path: string) {
                 </CKPTPreview>
             </div>
         </div>
-        <!--  -->
+        <!-- TODO: implement multiple metrics review -->
         <div style="width: calc(100%-200px); box-sizing: border-box;">
             <LineFigure v-if="mainMetricKey!=''" class="figure"
-                :title="`Validation Metrics ${mainMetricKey}`"
-                :values="valid_values" 
-                :unit="unit">
+                title="Validation Metrics"
+                :values="valid_values"
+                :x-name="unit">
             </LineFigure>
             <LineFigure v-if="mainMetricKey!=''" class="figure"
-                title="Loss"
+                :title="`Loss ${loss_func}`"
                 :values="losses"
-                :unit="unit">
+                :x-name="unit">
             </LineFigure>
         </div>
     </div>

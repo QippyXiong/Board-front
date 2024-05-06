@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { ElInput, ElButton } from 'element-plus'
 import { Search, Close } from '@element-plus/icons-vue'
+import { ref, onMounted, Ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import ParamsCard from '@/components/ParamsCard.vue'
 import CKPTPreview from '@/components/CKPTPreview.vue'
 // import ValidationsFigure from '@/components/ValidationsFigure.vue'
-import { CKPTStatic, CKPTMaps, webUiApi, CKPTkeys } from '../api'
-import { storeData } from '../api/utils'
+import { CKPTStatic, CKPTMaps, webUiApi, CKPTkeys } from '@/api'
+import { storeData } from '@/api/utils'
 
-import { ref, onMounted, Ref } from 'vue'
 
 const router = useRouter()
 
@@ -24,7 +24,8 @@ const maps: Ref<CKPTMaps> = ref({
     valid_params: undefined,
     test_metrics: undefined,
     status: undefined,
-    hyperparams: undefined
+    hyperparams: undefined,
+    dataset: undefined
 })
 const mainMetricKey: Ref<string> = ref('mrr')
 const targetIdxes: Ref<Record<CKPTkeys, number | undefined>> = ref({
@@ -34,22 +35,18 @@ const targetIdxes: Ref<Record<CKPTkeys, number | undefined>> = ref({
     valid_params: undefined,
     test_metrics: undefined,
     status: undefined,
-    hyperparams: undefined
+    hyperparams: undefined,
+    dataset: undefined
 })
 const interResult: Ref<number[]> = ref([])
 
-import ckpt_example from '@/ckpts_example.json'
-
 onMounted(() => {
-    // setTimeout(() => fetchCkpts(), 3000)
-    // let [ckpts, statics, mps] = ckpt_example as [string[], CKPTStatic[], CKPTMaps]
-    // cbv([ckpts, statics, mps])
+    webUiApi.addListener(`get_ckpts`, cbv)
     webUiApi.onready(fetchCkpts)
 })
 
 function cbv(data: [string[], CKPTStatic[], CKPTMaps]) {
     let [ckpts, statics, mps] = data
-    console.log(ckpts)
     ckpt_paths.value = ckpts
     maps.value = mps
     for (const [key, value] of Object.entries(mps))
@@ -58,7 +55,7 @@ function cbv(data: [string[], CKPTStatic[], CKPTMaps]) {
 }
 
 function fetchCkpts() {
-    webUiApi.toggle(`get_ckpts`, { root_dir: root_dir.value }, cbv)
+    webUiApi.emit(`get_ckpts`, { root_dir: root_dir.value })
 }
 
 function getInterset(idxes_arr: Array<number[]>) {
@@ -85,7 +82,6 @@ function getInterResult() {
 }
 
 function onDropTargetIdx(e: DragEvent) {
-    console.log('drop')
     e.preventDefault()
     let dataString = e.dataTransfer?.getData('application/json') as string
     let { idx, key } = JSON.parse(dataString) as { idx: number, key: CKPTkeys }
@@ -114,12 +110,12 @@ function jumpComparePage(): void {
             style="width: 200px; height: 100%; display: flex; flex-direction: column;">
             <div style="display: flex; flex-direction: row; flex-wrap: wrap">
                 <template v-for="idx, key of targetIdxes">
-                    <div v-if="idx != 'undefined'" >{{ key }}
+                    <div v-if="idx !== undefined" >{{ key }}
                         <Close style="float: right" width="10px" height="10px" 
                             @click="() => { targetIdxes[key] = undefined; getInterResult() }" >
                         </Close>
                     </div>
-                    <ParamsCard v-if="idx != 'undefined'" 
+                    <ParamsCard v-if="idx !== undefined" 
                         :data="conf_statics[idx][key]" ></ParamsCard>
                 </template>
             </div>
